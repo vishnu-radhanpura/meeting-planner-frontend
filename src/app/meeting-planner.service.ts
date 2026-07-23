@@ -1,11 +1,11 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+import { API_BASE_URL } from './runtime-config';
 
 @Injectable({ providedIn: 'root' })
 export class MeetingPlannerService {
-  readonly apiBase = 'http://localhost:8080/meeting-planner';
   authMode: 'login' | 'register' = 'login';
   user: any = null;
   userSubject = new BehaviorSubject<any | null>(null);
@@ -23,7 +23,7 @@ export class MeetingPlannerService {
   logoutLoading = false;
   participantUpdateLoading = false;
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: HttpClient, @Inject(API_BASE_URL) private readonly apiBase: string) {}
 
   clearAlerts() {
     this.message = '';
