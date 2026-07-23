@@ -211,7 +211,53 @@ export class MeetingPlannerService {
       .pipe(finalize(() => (this.loading = false)));
   }
 
+  getProfileImageUrl(profileImagePath: string | null | undefined) {
+    if (!profileImagePath) return null;
+    return `${this.apiBase}/profile-pictures/${encodeURIComponent(profileImagePath)}`;
+  }
+
+  getDefaultProfileImageUrl() {
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'><rect width='100%' height='100%' fill='%23eef2ff'/><g fill='%232563eb'><circle cx='40' cy='28' r='16'/><rect x='22' y='50' width='36' height='12' rx='6'/></g></svg>`;
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  }
+
+  uploadProfilePicture(file: File) {
+    if (!file) {
+      throw new Error('No file provided');
+    }
+    console.log('[MeetingPlannerService] uploadProfilePicture: start', file.name);
+    const fd = new FormData();
+    fd.append('file', file, file.name);
+    this.clearAlerts();
+    this.loading = true;
+    return this.http
+      .post<any>(`${this.apiBase}/users/me/profile-picture`, fd, { withCredentials: true })
+      .pipe(finalize(() => {
+        this.loading = false;
+      }));
+  }
+
   setUser(user: any | null) {
+    if (!user) {
+      this.user = null;
+      this.userSubject.next(null);
+      return;
+    }
+
+    // Normalize profile image URL if backend provides a profileImagePath
+    const profileImagePath = user?.profileImagePath ?? user?.profileImage ?? user?.avatarPath ?? null;
+    if (profileImagePath) {
+      try {
+        user.profilePictureUrl = this.getProfileImageUrl(profileImagePath);
+      } catch (err) {
+        console.warn('[MeetingPlannerService] setUser: failed to build profilePictureUrl', err);
+        user.profilePictureUrl = this.getDefaultProfileImageUrl();
+      }
+    } else if (!user.profilePictureUrl) {
+      // assign a default inline avatar if none provided
+      user.profilePictureUrl = this.getDefaultProfileImageUrl();
+    }
+
     this.user = user;
     this.userSubject.next(user);
   }

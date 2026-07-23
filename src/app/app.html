@@ -10,11 +10,18 @@
     <div class="top-actions">
       <ng-container *ngIf="service.user$ | async as user; else authTabs">
         <div class="profile-chip">
+          <img *ngIf="(user.profilePictureUrl || user.avatarUrl || user.picture || user.profilePicture) as avatar" [src]="avatar" alt="avatar" class="avatar" />
           <div>
             <strong>Welcome, {{ user.name || user.email }}</strong>
             <div class="profile-email">{{ user.email }}</div>
           </div>
-          <button class="button button-secondary" type="button" (click)="service.logout()" [disabled]="service.logoutLoading">Logout</button>
+          <div class="profile-actions">
+            <label class="upload-label">
+              <input type="file" accept="image/*" (change)="onProfilePictureSelected($event)" />
+              Change
+            </label>
+            <button class="button button-secondary" type="button" (click)="service.logout()" [disabled]="service.logoutLoading">Logout</button>
+          </div>
         </div>
       </ng-container>
       <ng-template #authTabs>

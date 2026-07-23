@@ -1,4 +1,5 @@
 import { Component, DoCheck, OnInit } from '@angular/core';
+import { NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthComponent } from './auth.component';
 import { MeetingFormComponent } from './meeting-form.component';
@@ -16,6 +17,38 @@ export class App implements DoCheck, OnInit {
   protected readonly title = 'Meeting Planner';
 
   constructor(public readonly service: MeetingPlannerService) {}
+
+  public onProfilePictureSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input?.files && input.files[0];
+    if (!file) return;
+    console.log('[App] onProfilePictureSelected: file=', file.name);
+    this.service.uploadProfilePicture(file).subscribe({
+      next: (resp) => {
+        console.log('[App] uploadProfilePicture: response', resp);
+        // refresh profile
+        this.service.fetchUserProfile().subscribe({
+          next: (profile) => {
+            const profileUser = profile?.data ?? profile?.user ?? profile ?? null;
+            if (profileUser && typeof profileUser === 'object') {
+              this.service.setUser(profileUser);
+              this.service.setMessage('Profile picture updated.', 'success');
+            }
+          },
+          error: (err) => {
+            console.error('[App] fetchUserProfile after upload failed', err);
+            this.service.setMessage('Profile updated but failed to refresh profile.', 'error');
+          }
+        });
+      },
+      error: (err) => {
+        console.error('[App] uploadProfilePicture: error', err);
+        this.service.setMessage(this.service.getErrorMessage(err) || 'Failed to upload profile picture.', 'error');
+      }
+    });
+    // clear the input so the same file can be picked again if needed
+    if (input) input.value = '';
+  }
 
   ngOnInit() {
     console.log('[App] ngOnInit: checking existing session');

@@ -88,6 +88,36 @@ body {
   min-width: 21rem;
 }
 
+.profile-chip .avatar {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 6px 18px rgba(15,23,42,0.08);
+}
+
+.profile-actions {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.upload-label input[type="file"] {
+  display: none;
+}
+
+.upload-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.6rem;
+  border-radius: 12px;
+  background: #eef2ff;
+  color: #2563eb;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .profile-chip > div {
   display: grid;
   gap: 0.15rem;
