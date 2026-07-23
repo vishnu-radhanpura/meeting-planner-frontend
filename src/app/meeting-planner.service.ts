@@ -51,12 +51,16 @@ export class MeetingPlannerService {
     }
 
     if (Array.isArray(body?.errors) && body.errors.length) {
-      const firstError = body.errors[0];
-      if (typeof firstError === 'string') {
-        return firstError;
-      }
-      if (firstError?.message) {
-        return firstError.message;
+      const errorMessages = body.errors.map((err: any) => {
+        if (!err) {
+          return null;
+        }
+        const field = err.field ? `${err.field}: ` : '';
+        const message = err.message ?? err.error ?? err;
+        return typeof message === 'string' ? `${field}${message}` : `${field}${JSON.stringify(message)}`;
+      }).filter(Boolean);
+      if (errorMessages.length) {
+        return errorMessages.join('\n');
       }
     }
 
@@ -137,9 +141,15 @@ export class MeetingPlannerService {
         )
       : [];
 
+    const organizer = meeting?.organizer ?? meeting?.owner ?? meeting?.createdBy ?? null;
+    const normalizedOrganizer = typeof organizer === 'string'
+      ? { email: organizer }
+      : organizer ?? null;
+
     return {
       ...meeting,
-      participants
+      participants,
+      organizer: normalizedOrganizer
     };
   }
 

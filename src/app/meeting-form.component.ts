@@ -89,8 +89,7 @@ export class MeetingFormComponent {
       },
       error: (error) => {
         console.log('[MeetingForm] createMeeting: error', error);
-        this.service.messageType = 'error';
-        this.service.message = this.service.getErrorMessage(error) || 'Unable to create meeting.';
+        this.service.setMessage(this.service.getErrorMessage(error) || 'Unable to create meeting.', 'error');
       }
     });
   }

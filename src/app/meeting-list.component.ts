@@ -28,6 +28,11 @@ import { MeetingPlannerService } from './meeting-planner.service';
             <span>{{ meeting.startTime | date:'short' }} — {{ meeting.endTime | date:'short' }}</span>
             <span>{{ meeting.location }}</span>
           </div>
+          <div class="meeting-organizer">
+            <strong>Organizer</strong>
+            <p>{{ meeting.organizer?.name || meeting.organizer?.email || 'Unknown' }}</p>
+            <p *ngIf="meeting.organizer?.email" class="organizer-email">{{ meeting.organizer.email }}</p>
+          </div>
           <div class="meeting-participants">
             <strong>Participants</strong>
             <div class="participants-list">

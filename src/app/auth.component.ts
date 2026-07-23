@@ -72,6 +72,7 @@ export class AuthComponent {
     this.authLoading = true;
     this.statusMessage = '';
     this.statusType = '';
+    this.service.clearAlerts();
     console.log('submitAuth: start', { mode: this.mode, name: this.name, email: this.email });
 
     this.service.submitAuth(this.name, this.email, this.password)
@@ -86,6 +87,20 @@ export class AuthComponent {
             this.statusType = 'error';
             this.statusMessage = response?.message || response?.error || 'Authentication failed.';
             console.log('submitAuth: response indicates failure', this.statusMessage);
+            return;
+          }
+
+          if (this.mode === 'register') {
+            const registrationMessage = response?.message || 'Registration successful. Please log in with your credentials.';
+            this.statusType = 'success';
+            this.statusMessage = registrationMessage;
+            console.log('submitAuth: registration success', registrationMessage);
+            this.resetForm();
+            try {
+              this.cd.detectChanges();
+            } catch (err) {
+              console.warn('submitAuth: detectChanges after registration success failed', err);
+            }
             return;
           }
 
@@ -154,6 +169,12 @@ export class AuthComponent {
       console.log('finishLogin: inside ngZone run, service.user=', this.service.user);
     });
     this.service.loadMeetings();
+  }
+
+  private resetForm() {
+    this.name = '';
+    this.email = '';
+    this.password = '';
   }
 }
 
