@@ -19,6 +19,12 @@ export class MeetingPlannerService {
   message$ = this.messageSubject.asObservable();
   private messageTypeSubject = new BehaviorSubject<'success' | 'error' | ''>('');
   messageType$ = this.messageTypeSubject.asObservable();
+
+  private meetingMessageSubject = new BehaviorSubject<string | null>(null);
+  meetingMessage$ = this.meetingMessageSubject.asObservable();
+  private meetingMessageTypeSubject = new BehaviorSubject<'success' | 'error' | ''>('');
+  meetingMessageType$ = this.meetingMessageTypeSubject.asObservable();
+
   loading = false;
   logoutLoading = false;
   participantUpdateLoading = false;
@@ -39,6 +45,16 @@ export class MeetingPlannerService {
     this.messageTypeSubject.next(this.messageType);
   }
 
+  clearMeetingMessages() {
+    this.meetingMessageSubject.next(null);
+    this.meetingMessageTypeSubject.next('');
+  }
+
+  setMeetingMessage(message: string | null, type: 'success' | 'error' | '' = '') {
+    this.meetingMessageSubject.next(message ?? null);
+    this.meetingMessageTypeSubject.next(type);
+  }
+
   public getErrorMessage(error: any): string {
     if (!error) {
       return 'An unexpected error occurred.';
@@ -50,8 +66,9 @@ export class MeetingPlannerService {
       return body;
     }
 
-    if (Array.isArray(body?.errors) && body.errors.length) {
-      const errorMessages = body.errors.map((err: any) => {
+    const validationErrors = Array.isArray(body?.errors) ? body.errors : Array.isArray(body?.error?.errors) ? body.error.errors : null;
+    if (validationErrors && validationErrors.length) {
+      const errorMessages = validationErrors.map((err: any) => {
         if (!err) {
           return null;
         }
@@ -60,7 +77,8 @@ export class MeetingPlannerService {
         return typeof message === 'string' ? `${field}${message}` : `${field}${JSON.stringify(message)}`;
       }).filter(Boolean);
       if (errorMessages.length) {
-        return errorMessages.join('\n');
+        const joined = errorMessages.join('; ');
+        return body?.message ? `${body.message}: ${joined}` : joined;
       }
     }
 

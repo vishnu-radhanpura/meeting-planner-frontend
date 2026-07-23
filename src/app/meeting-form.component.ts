@@ -11,6 +11,11 @@ import { finalize } from 'rxjs/operators';
   template: `
     <div class="meeting-form-card">
       <h3>Create a meeting</h3>
+      <div *ngIf="service.message$ | async as msg" class="status-message form-alert" [ngClass]="{ 'success': (service.messageType$ | async) === 'success', 'error': (service.messageType$ | async) === 'error' }" aria-live="polite" role="status">
+        <span class="alert-icon" aria-hidden="true">!</span>
+        <p>{{ msg }}</p>
+        <button type="button" class="close-button" aria-label="Close status message" (click)="service.clearAlerts()">×</button>
+      </div>
       <form class="form-grid" (ngSubmit)="submitMeeting()" novalidate>
         <label class="field">
           <span>Title</span>

@@ -17,6 +17,12 @@ import { MeetingPlannerService } from './meeting-planner.service';
         </button>
       </div>
 
+      <div *ngIf="service.meetingMessage$ | async as msg" class="status-message form-alert" [ngClass]="{ 'success': (service.meetingMessageType$ | async) === 'success', 'error': (service.meetingMessageType$ | async) === 'error' }" aria-live="polite" role="status">
+        <span class="alert-icon" aria-hidden="true">!</span>
+        <p>{{ msg }}</p>
+        <button type="button" class="close-button" aria-label="Close status message" (click)="service.clearMeetingMessages()">×</button>
+      </div>
+
       <div class="meeting-grid">
         <article class="meeting-card" *ngFor="let meeting of (service.meetings$ | async)">
           <div class="meeting-meta">
@@ -118,11 +124,11 @@ export class MeetingListComponent {
         // Handle API-level failures that return 200 with success=false
         if (response?.success === false) {
           console.warn('[MeetingListComponent] saveParticipants: API reported failure', response);
-          this.service.setMessage(response?.message || response?.error || this.service.getErrorMessage(response) || 'Unable to update participants.', 'error');
+          this.service.setMeetingMessage(response?.message || response?.error || this.service.getErrorMessage(response) || 'Unable to update participants.', 'error');
           return;
         }
 
-        this.service.setMessage('Participants updated successfully.', 'success');
+        this.service.setMeetingMessage('Participants updated successfully.', 'success');
 
         const updatedParticipants = participantEmails.map((email) => ({ email }));
         const responseParticipants = response?.participants ?? response?.data?.participants ?? updatedParticipants;
@@ -150,9 +156,9 @@ export class MeetingListComponent {
         }
 
         // Prefer server-provided message where available
-        const serverMessage = error?.error?.message ?? error?.error ?? error?.message ?? null;
-        this.service.setMessage(serverMessage || this.service.getErrorMessage(error) || 'Unable to update participants.', 'error');
-        console.log('[MeetingListComponent] saveParticipants: set service.message via setMessage', serverMessage);
+        const message = this.service.getErrorMessage(error) || error?.error?.message || error?.message || 'Unable to update participants.';
+        this.service.setMeetingMessage(message, 'error');
+        console.log('[MeetingListComponent] saveParticipants: set service.meetingMessage via setMeetingMessage', message);
       }
     });
   }
